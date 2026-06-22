@@ -1,0 +1,150 @@
+﻿@model DirectoryWatcher.Models.AnalysisResult
+
+@{
+    ViewData["Title"] = "Sledování adresáře";
+}
+
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="display-5 fw-bold text-primary">Directory Watcher</h1>
+            <p class="text-muted fs-5">Moderní nástroj pro detekci změn a správu verzí souborů v reálném čase.</p>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-4 bg-light">
+        <div class="card-body p-4">
+            <form asp-action="Index" method="post" class="row g-3 align-items-center">
+                <div class="col-md-9">
+                    <label for="directoryPath" class="form-label fw-semibold text-secondary">Cesta k adresáři pro analýzu</label>
+                    <input type="text" class="form-control form-control-lg border-2 shadow-inner" id="directoryPath" name="directoryPath"
+                           placeholder="Např. C:\MojeSlozka\Projekt" value="@Model?.AnalyzedDirectory" />
+                </div>
+                <div class="col-md-3 d-grid align-self-end">
+                    <button type="submit" class="btn btn-primary btn-lg fw-bold shadow-sm py-2">
+                        🔍 Analyzovat složku
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @if (Model != null && !Model.IsSuccess)
+    {
+        <div class="alert alert-danger d-flex align-items-center shadow-sm border-0 p-3 mb-4" role="alert">
+            <div class="fs-5 me-2">⚠️</div>
+            <div class="fw-medium">@Model.ErrorMessage</div>
+        </div>
+    }
+
+    @if (Model != null && Model.IsSuccess && !string.IsNullOrEmpty(Model.AnalyzedDirectory))
+    {
+        <div class="alert alert-info border-0 shadow-sm mb-4">
+            <strong>Aktuálně analyzovaný adresář:</strong> <span class="font-monospace text-dark">@Model.AnalyzedDirectory</span>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm border-0 border-start border-success border-4">
+                    <div class="card-body">
+                        <h6 class="text-muted text-uppercase small fw-bold tracking-wider">Nové soubory</h6>
+                        <h2 class="fw-bold text-success mb-0">@Model.NewFiles.Count</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm border-0 border-start border-warning border-4">
+                    <div class="card-body">
+                        <h6 class="text-muted text-uppercase small fw-bold tracking-wider">Změněné soubory</h6>
+                        <h2 class="fw-bold text-warning mb-0">@Model.ChangedFiles.Count</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm border-0 border-start border-danger border-4">
+                    <div class="card-body">
+                        <h6 class="text-muted text-uppercase small fw-bold tracking-wider">Smazané soubory</h6>
+                        <h2 class="fw-bold text-danger mb-0">@Model.DeletedFiles.Count</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-white py-3 border-bottom border-light d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold text-secondary">Podrobný přehled změn</h5>
+            </div>
+            <div class="card-body p-0">
+
+                @if (Model.NewFiles.Count == 0 && Model.ChangedFiles.Count == 0 && Model.DeletedFiles.Count == 0)
+                {
+                    <div class="text-center py-5">
+                        <p class="text-muted mb-0 fs-5">Od poslední kontroly nedošlo k žádným změnám. Stav adresáře je identický.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0 px-3">
+                            <thead class="table-light text-secondary small text-uppercase">
+                                <tr>
+                                    <th class="ps-4 py-3" style="width: 15%">Stav</th>
+                                    <th style="width: 50%">Relativní cesta k souboru</th>
+                                    <th style="width: 15%">Verze</th>
+                                    <th class="pe-4 text-end" style="width: 20%">SHA-256 Otisk (Hash)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var file in Model.NewFiles)
+                                {
+                                    <tr>
+                                        <td class="ps-4">
+                                            <span class="badge bg-success text-white px-2 py-1.5 fw-semibold shadow-sm">Nový</span>
+                                        </td>
+                                        <td class="fw-semibold text-dark">@file.RelativePath</td>
+                                        <td>
+                                            <span class="badge bg-light text-dark border px-2">v@file.Version</span>
+                                        </td>
+                                        <td class="pe-4 text-end text-muted font-monospace small" title="@file.Hash">
+                                            @file.Hash.Substring(0, Math.Min(12, file.Hash.Length))...
+                                        </td>
+                                    </tr>
+                                }
+                                @foreach (var file in Model.ChangedFiles)
+                                {
+                                    <tr>
+                                        <td class="ps-4">
+                                            <span class="badge bg-warning text-dark px-2 py-1.5 fw-semibold shadow-sm">Změněn</span>
+                                        </td>
+                                        <td class="fw-semibold text-dark">@file.RelativePath</td>
+                                        <td>
+                                            <span class="badge bg-warning text-dark fw-bold px-2 shadow-sm">v@file.Version</span>
+                                        </td>
+                                        <td class="pe-4 text-end text-muted font-monospace small" title="@file.Hash">
+                                            @file.Hash.Substring(0, Math.Min(12, file.Hash.Length))...
+                                        </td>
+                                    </tr>
+                                }
+                                @foreach (var file in Model.DeletedFiles)
+                                {
+                                    <tr>
+                                        <td class="ps-4">
+                                            <span class="badge bg-danger text-white px-2 py-1.5 fw-semibold shadow-sm">Smazán</span>
+                                        </td>
+                                        <td class="text-muted text-decoration-line-through">@file</td>
+                                        <td>
+                                            <span class="badge bg-light text-muted border px-2">-</span>
+                                        </td>
+                                        <td class="pe-4 text-end text-muted font-monospace small">
+                                            N/A
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
