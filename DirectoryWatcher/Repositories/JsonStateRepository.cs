@@ -22,7 +22,7 @@ namespace DirectoryWatcher.Repositories
 			}
 			catch (Exception)
 			{
-				// Pokud je soubor poškozený nebo nečitelný, vrátíme prázdný stav
+				// Pokud je soubor poškozený nebo nečitelný, vrátí prázdný stav
 				return new();
 			}
 		}

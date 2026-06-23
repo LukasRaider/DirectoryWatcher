@@ -9,7 +9,7 @@ namespace DirectoryWatcher.Controllers
 	{
 		private readonly IDirectoryAnalyzerService _analyzerService;
 
-		// Framework sem automaticky dosadí registrovanou službu z Program.cs
+		
 		public HomeController(IDirectoryAnalyzerService analyzerService)
 		{
 			_analyzerService = analyzerService;
@@ -19,7 +19,6 @@ namespace DirectoryWatcher.Controllers
 		[HttpGet]
 		public IActionResult Index()
 		{
-			// Na zaèátku posíláme prázdný model (analýza ještì nebìžela)
 			return View(new AnalysisResult());
 		}
 
@@ -40,7 +39,7 @@ namespace DirectoryWatcher.Controllers
 			// Volání byznysové logiky
 			var result = await _analyzerService.AnalyzeDirectoryAsync(directoryPath);
 
-			// Vrátíme stejné View, ale tentokrát mu pøedáme naplnìný model s výsledky analýzy
+			// Vracení stejné View, ale tentokrát mu pøedáme naplnìný model s výsledky analýzy
 			return View(result);
 		}
 	}

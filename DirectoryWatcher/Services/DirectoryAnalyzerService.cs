@@ -73,7 +73,7 @@ namespace DirectoryWatcher.Services
 						}
 						else
 						{
-							currentState[relativePath] = prevRecord; // Žádná změna, zachováme starou verzi
+							currentState[relativePath] = prevRecord; // Žádná změna, zachová starou verzi
 						}
 					}
 				}
@@ -101,7 +101,7 @@ namespace DirectoryWatcher.Services
 		private async Task<string> ComputeFileHashAsync(string filePath)
 		{
 			using var sha256 = SHA256.Create();
-			// useAsync: true optimalizuje výkon pro větší soubory (např. 50MB)
+			// useAsync: true optimalizuje výkon pro větší soubory (např. 50MB) 
 			using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 4096, useAsync: true);
 
 			var hashBytes = await sha256.ComputeHashAsync(stream);
